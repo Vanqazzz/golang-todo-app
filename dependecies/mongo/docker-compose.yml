@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  db:
+    image: mongo
+    restart: always
+    environment:
+      - MONGO=INITDB_DATABASE=dbName
+    ports:
+      - 27017:27017
+    volumes:
+      - $PWD/data/db:/data/db
+volumes:
+  db:
+    driver: local
+    
