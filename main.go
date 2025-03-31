@@ -230,6 +230,7 @@ func updateTodo(rw http.ResponseWriter, r *http.Request) {
 
 	var updateTodoReq UpdateTodo
 
+	// Decode JSON
 	if err := json.NewDecoder(r.Body).Decode(&updateTodoReq); err != nil {
 		log.Printf("failed to decode the json response body data: %v\n", err.Error())
 		rnd.JSON(rw, http.StatusBadRequest, err.Error())
@@ -258,6 +259,30 @@ func updateTodo(rw http.ResponseWriter, r *http.Request) {
 		"message": "Todo updated successfully",
 		"data":    data.ModifiedCount,
 	})
+}
+
+func deleteTodo(rw http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	res, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Printf("invalid id: %v\n", err.Error())
+		rnd.JSON(rw, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	filter := bson.M{"id": res}
+	if data, err := db.Collection(collectionName).DeleteOne(r.Context(), filter); err != nil {
+		log.Printf("could not delete item from database: %v\n", err.Error())
+		rnd.JSON(rw, http.StatusInternalServerError, renderer.M{
+			"message": "an error occurred while deleting todo item",
+			"error":   err.Error(),
+		})
+	} else {
+		rnd.JSON(rw, http.StatusOK, renderer.M{
+			"message": "item deleted successfully",
+			"data":    data,
+		})
+	}
 }
 
 func checkError(err error) {
