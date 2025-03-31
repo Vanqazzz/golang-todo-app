@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -73,8 +75,33 @@ func main() {
 		WriteTimeout: 60 * time.Second,
 	}
 
-	fmt.Println("Server started on port:", 8080)
-	if err := server.ListenAndServe(); err != nil {
-		log.Printf("listen:%s\n", err)
+	// channel for receive signal
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, os.Interrupt)
+
+	go func() {
+		fmt.Println("Server started on port:", 8080)
+		if err := server.ListenAndServe(); err != nil {
+			log.Printf("listen:%s\n", err)
+		}
+	}()
+
+	// wait for a signal to shut down the server
+	sig := <-stopChan
+	log.Printf("signal recevied:%v", sig)
+
+	// disconnect mongo client from db
+	if err := client.Disconnect(context.Background()); err != nil {
+		panic(err)
 	}
+
+	// create a context with a timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// shutdown  the server
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server shutdown failed: %v\n", err)
+	}
+	log.Println("Server shutdown")
 }
