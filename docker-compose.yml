@@ -1,0 +1,37 @@
+
+services:
+  
+  db:
+    image: mongo:latest
+    container_name: mongo-db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data://data/db
+    networks:
+      - todo_network
+  
+  app:
+    build: .
+    container_name: golang-todo-app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+     - MONGO_URI=mongodb://db:27017/todoapi
+    depends_on:
+      - db
+    networks:
+      - todo_network
+
+  
+
+networks:
+  todo_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+    
