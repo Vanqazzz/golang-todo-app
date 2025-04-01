@@ -2,7 +2,7 @@
 
 **TODO api** Simple Golang todo-api-app without frontend UI with basic CRUD operations: 
 CREATE, DELETE, UPDATE, VIEW all Todos
-P.S run and test with Postman
+
 
 
 ## Installation
@@ -14,7 +14,11 @@ git clone https://github.com/Vanqazzz/todo-api-app && cd todo-api-app
 ```
 
 -  **Now run app with docker-compose:**
+
+```cmd
     docker-compose up --build
+```
+- **Test with Postman**
 
 ## Test with Postman
 
